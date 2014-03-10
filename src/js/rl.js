@@ -70,9 +70,10 @@ rl.intro = function() {
 
   // Display the world in the background.
   var world = rl.map.newWorld();
-  rl.view.setCellGenerator(world)
+  rl.view.setCellGenerator(world);
 
-  goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
+  var key =
+      goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
     if (e.keyCode != goog.events.KeyCodes.SPACE) {
       return;
     }
@@ -92,6 +93,7 @@ rl.intro = function() {
     if (i == slides.length - 1) {
       goog.dom.classes.add(slides[slides.length - 1], 'hidden');
       goog.dom.classes.add(message, 'hidden');
+      goog.events.unlistenByKey(key);
       rl.newGame(world);
     }
   });
@@ -119,8 +121,8 @@ rl.newGame = function(world) {
   })
   rl.updateStatus(hp, bread, state, score);
 
-  goog.events.removeAll(window);
-  goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
+  var key =
+      goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
     var newX = x, newY = y;
     var step = true;
 
@@ -160,6 +162,7 @@ rl.newGame = function(world) {
       state++;
       if (state == rl.hungerStates.length) {
         state--;
+        hp = 0;
         gameOver = rl.GAME_OVER_STARVED;
       }
     }
@@ -174,6 +177,7 @@ rl.newGame = function(world) {
     rl.view.redraw();
 
     if (gameOver != '') {
+      goog.events.unlistenByKey(key);
       rl.gameOver(gameOver);
     }
   });
@@ -201,14 +205,15 @@ rl.gameOver = function(cause) {
   goog.dom.classes.remove(causeElem, 'hidden');
   goog.dom.classes.remove(messageElem, 'hidden');
 
-  goog.events.removeAll(window);
-  goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
+  var key =
+      goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
     if (e.keyCode != goog.events.KeyCodes.SPACE) {
       return;
     }
 
     goog.dom.classes.add(causeElem, 'hidden');
     goog.dom.classes.remove(welcomeElem, 'hidden');
+    goog.events.unlistenByKey(key);
     rl.intro();
   });
 }
