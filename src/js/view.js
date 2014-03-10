@@ -4,10 +4,7 @@ goog.require('goog.events');
 goog.require('goog.events.EventType');
 
 
-/**
- * @const
- * @type{number}
- */
+/** @const {number} */
 rl.view.CELL_SIZE = 20;
 
 
@@ -40,13 +37,13 @@ rl.view.init = function() {
 }
 
 
-rl.view.show = function(elem) {
-  goog.dom.classes.remove(elem, 'hidden')
-}
-
-
-rl.view.hide = function(elem) {
-  goog.dom.classes.add(elem, 'hidden')
+/**
+ * Set the content of the status bar.
+ */
+rl.view.setStatus = function(left, right) {
+  var bars = goog.dom.getChildren(goog.dom.getElement('status'));
+  bars[0].innerHTML = left;
+  bars[1].innerHTML = right;
 }
 
 

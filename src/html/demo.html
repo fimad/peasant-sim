@@ -9,14 +9,29 @@
 <body>
   <div id="status" class="status">
     <div class="left">
-      Peasant | 7/11 HP | 3g bread | sated
+      Peasant | 13/13 HP | 800g bread | sated
     </div>
     <div class="right">
-      Score: 12 steps
+      Score: 0
     </div>
   </div>
   <div id="message" class="message">
-    <div class="slide">
+    <div id="dead_starved" class="slide hidden">
+      You have escaped Lord Randal's punishment by starving to death.  As
+      punishment for your transgressions, your wife and children are beaten and
+      forced to work in the nickel mines.
+      <br><br>
+      Press space to continue...
+    </div>
+
+    <div id="dead_eaten" class="slide hidden">
+      You are chased down by Lord Randal's hounds. Your last moments pass in a
+      a blur of bestial growls and rancid slobber.
+      <br><br>
+      Press space to continue...
+    </div>
+
+    <div id="welcome" class="slide">
       <br>
       -----=====(Peasant Simulator)=====-----
       <br><br><br>
