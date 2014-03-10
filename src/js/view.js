@@ -15,6 +15,14 @@ rl.view.CELL_SIZE = 20;
 rl.view._root = null;
 
 
+/** @type{Element} */
+rl.view._status = null;
+
+
+/** @type{Element} */
+rl.view._message = null;
+
+
 /** @type{Array.<Array.<Element>>} */
 rl.view._cells = null;
 
@@ -25,13 +33,20 @@ rl.view._cellGen = null;
 /** Creates the initial view DOM and sets up event listeners. */
 rl.view.init = function() {
   rl.view._root = goog.dom.getElement('map');
+  rl.view._status = goog.dom.getElement('status');
+  rl.view._message = goog.dom.getElement('message');
   goog.events.listen(window, goog.events.EventType.RESIZE, rl.view.onResize);
   rl.view.onResize();
 }
 
 
-rl.view.show = function() {
-  rl.view._root
+rl.view.show = function(elem) {
+  goog.dom.classes.remove(elem, 'hidden')
+}
+
+
+rl.view.hide = function(elem) {
+  goog.dom.classes.add(elem, 'hidden')
 }
 
 
@@ -56,9 +71,11 @@ rl.view.onResize = function() {
 
   root.style.left = ((width - (cellWidth * rl.view.CELL_SIZE)) / 2) + 'px';
   root.style.top = ((height - (cellHeight * rl.view.CELL_SIZE)) / 2) + 'px';
+  rl.view._status.style.left = root.style.left;
 
-  root.width = cellWidth * rl.view.CELL_SIZE + 'px';
-  root.height = cellHeight * rl.view.CELL_SIZE + 'px';
+  root.style.width = cellWidth * rl.view.CELL_SIZE + 'px';
+  root.style.height = cellHeight * rl.view.CELL_SIZE + 'px';
+  rl.view._status.style.width = root.style.width;
 
   for (var x = 0; x < cellWidth; x++) {
     cells[x] = [];

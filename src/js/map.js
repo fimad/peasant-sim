@@ -1,75 +1,134 @@
 goog.provide('rl.map');
-goog.require('goog.events');
-goog.require('goog.events.EventType');
-goog.require('goog.events.KeyCodes');
 goog.require('rl.view');
 
 
-/** @typedef{Array.<Array<rl.map.Cell>>} */
-rl.map.Map;
-
 /**
  * @typedef{Object.<
- *  symbol
+ *  text: string,
+ *  name: string,
+ *  color: string,
+ *  walkable: boolean,
  * >}
  */
 rl.map.Cell;
 
 
+/**
+ * @typedef{Object.<
+ *  cell: rl.map.Cell,
+ *  cutoff: number,
+ * >}
+ */
+rl.map.Terrain;
+
+
+/**
+ * Generates a new procedurally generated world.
+ */
 rl.map.newWorld = function() {
-}
-
-rl.map.newSimplex = function() {
   var noise = new SimplexNoise();
-
-  var x = 0;
-  var y = 0;
-
-  goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
-    var newX = x, newY = y;
-    switch(e.keyCode) {
-      case goog.events.KeyCodes.H:
-      case goog.events.KeyCodes.LEFT:
-        newX--; break;
-      case goog.events.KeyCodes.J:
-      case goog.events.KeyCodes.DOWN:
-        newY++; break;
-      case goog.events.KeyCodes.K:
-      case goog.events.KeyCodes.UP:
-        newY--; break;
-      case goog.events.KeyCodes.L:
-      case goog.events.KeyCodes.RIGHT:
-        newX++; break;
+  return function(x, y) {
+    var z = (1 + noise.noise2D(x / 25, y / 25)) / 2;
+    for (var i = 0; i < rl.map._terrain.length; i++) {
+      if (rl.map._terrain[i].cutoff >= z) {
+        return rl.map._terrain[i].cell;
+      }
     }
-    var z = (1 + noise.noise2D(newX / 25, newY / 25)) / 2;
-    if (z > 1/4 && z < 3/4) {
-      x = newX;
-      y = newY;
-    }
-    rl.view.redraw();
-  });
-
-  return function(dx, dy) {
-    var z = noise.noise2D((x + dx) / 25, (y + dy) / 25);
-    if (dx == 0 && dy == 0) {
-      return {text: '@', color: '#FFF'};
-    }
-
-    var grad = [
-      // Mountains
-      "&#9650;",
-      // Trees
-      "&#9155;",
-      // Ground
-      ".",
-      // Water
-      "~"
-      ];
-      //"MNmdhyso+/:-.`";
-    var colors = ["#A8A8A8", "#5BAD4C", "#DED1AD", "#3D9DF2"];
-    return {
-      text: grad[Math.floor(grad.length * (z + 1)/2)],
-      color: colors[Math.floor(colors.length * (z + 1)/2)],
-    };
+    return rl.map._terrain[rl.map._terrain.length - 1];
   }
 }
+
+
+/** @type{Array.<rl.map.Cell> */
+rl.map._terrain = [
+  {
+    cell: {
+      name: 'water',
+      text: '=',
+      color: '#3D9DF2',
+      walkable: false,
+    },
+    cutoff: .05,
+  },
+  {
+    cell: {
+      name: 'water',
+      text: '~',
+      color: '#3D9DF2',
+      walkable: false,
+    },
+    cutoff: .15,
+  },
+  {
+    cell: {
+      name: 'dirt',
+      text: '.',
+      color: '#DED1AD',
+      walkable: true,
+    },
+    cutoff: .25,
+  },
+  {
+    cell: {
+      name: 'plains',
+      text: ',',
+      color: '#9EA36F',
+      walkable: true,
+    },
+    cutoff: .4,
+  },
+  {
+    cell: {
+      name: 'trees',
+      text: '&#9155;',
+      color: '#70AD4C',
+      walkable: true,
+    },
+    cutoff: .5,
+  },
+  {
+    cell: {
+      name: 'trees',
+      text: '&#9880;',
+      color: '#70AD4C',
+      walkable: true,
+    },
+    cutoff: .6,
+  },
+  {
+    cell: {
+      name: 'trees',
+      text: '&#8607;',
+      color: '#5BAD4C',
+      walkable: true,
+    },
+    cutoff: .65,
+  },
+  {
+    cell: {
+      name: 'trees',
+      text: '&#8648;',
+      color: '#5BAD4C',
+      walkable: true,
+    },
+    cutoff: .7,
+  },
+  {
+    cell: {
+      name: 'hills',
+      text: '&#9652;',
+      color: '#A8A8A8',
+      walkable: false,
+    },
+    cutoff: .9,
+  },
+  {
+    cell: {
+      name: 'mountains',
+      text: '&#9650;',
+      color: '#E6E6E6',
+      walkable: false,
+    },
+    cutoff: 1,
+  },
+];
