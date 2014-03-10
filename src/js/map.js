@@ -27,7 +27,7 @@ rl.map.Terrain;
  */
 rl.map.newWorld = function() {
   var noise = new SimplexNoise();
-  return function(x, y) {
+  var cellGen = function(x, y) {
     var z = (1 + noise.noise2D(x / 25, y / 25)) / 2;
     for (var i = 0; i < rl.map._terrain.length; i++) {
       if (rl.map._terrain[i].cutoff >= z) {
@@ -36,6 +36,12 @@ rl.map.newWorld = function() {
     }
     return rl.map._terrain[rl.map._terrain.length - 1];
   }
+
+  // Make sure that the starting location is walkable.
+  if (!cellGen(0, 0).walkable) {
+    return rl.map.newWorld();
+  }
+  return cellGen;
 }
 
 
