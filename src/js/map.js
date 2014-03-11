@@ -33,7 +33,7 @@ rl.map.newWorld = function() {
         return rl.map._terrain[i].cell;
       }
     }
-    return rl.map._terrain[rl.map._terrain.length - 1];
+    return rl.map._terrain[rl.map._terrain.length - 1].cell;
   }
 
   // Make sure that the starting location is walkable.

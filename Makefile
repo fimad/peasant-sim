@@ -13,6 +13,7 @@ NAMESPACE=rl
 SRC_DIR=src
 OUT_DIR=build
 GEN_DIR=gen
+THIRD_PARTY=third_party
 CSS_DIR=${SRC_DIR}/css
 HTML_DIR=${SRC_DIR}/html
 JS_DIR=${SRC_DIR}/js
@@ -38,7 +39,7 @@ ${OUT_DIR} : ${DEPLOY_JS} ${DEPLOY_CSS} ${SRCS_HTML}
 	cp ${DEPLOY_JS} ${OUT_DIR}
 	cp ${DEPLOY_CSS} ${OUT_DIR}
 	cp -R ${HTML_DIR}/* ${OUT_DIR}
-	cp third_party/js/*.js ${OUT_DIR}
+	cp ${THIRD_PARTY}/* ${OUT_DIR}
 
 ${DEPLOY_JS} : ${SRCS_JS}
 	mkdir -p ${GEN_DIR}

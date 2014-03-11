@@ -1,4 +1,5 @@
 goog.provide('rl');
+goog.require('rl.dogs');
 goog.require('rl.map');
 goog.require('rl.view');
 
@@ -25,7 +26,7 @@ rl.BREAD_FILL_UP = 2;
 
 
 /** @const {number} */
-rl.STEPS_PER_STATE = 5;
+rl.STEPS_PER_STATE = 10;
 
 
 /** @const {string} */
@@ -66,8 +67,6 @@ rl.init = function() {
  * slides have run out.
  */
 rl.intro = function() {
-  goog.events.removeAll(window);
-
   // Display the world in the background.
   var world = rl.map.newWorld();
   rl.view.setCellGenerator(world);
@@ -112,13 +111,15 @@ rl.newGame = function(world) {
   var stateSteps = 0;
   var gameOver = '';
 
+  var dogs = rl.dogs.spawn(world);
+
   // Replace the cell generator with one that displays the current user.
   rl.view.setCellGenerator(function(dx, dy) {
     if (dx == 0 && dy == 0) {
       return {text: '@', color: '#FFF'};
     }
-    return world(x + dx, y + dy);
-  })
+    return rl.dogs.overlay(dogs, world)(x + dx, y + dy);
+  });
   rl.updateStatus(hp, bread, state, score);
 
   var key =
@@ -145,6 +146,8 @@ rl.newGame = function(world) {
           bread -= rl.BREAD_SLICE;
         }
         break;
+      case goog.events.KeyCodes.PERIOD:
+        break;
       default:
         step = false;
     }
@@ -156,6 +159,12 @@ rl.newGame = function(world) {
 
     score++;
     stateSteps++;
+
+    hp -= rl.dogs.update(dogs, world, x, y);
+    hp = Math.max(0, hp);
+    if (hp == 0) {
+      gameOver = rl.GAME_OVER_EATEN;
+    }
 
     if (stateSteps >= rl.STEPS_PER_STATE) {
       stateSteps = 0;
