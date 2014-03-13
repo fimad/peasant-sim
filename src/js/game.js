@@ -157,25 +157,84 @@ rl.Game.Command = {
   PAUSE: 6
 }
 
+
+/**
+ * @param {rl.map.WorldFunc} world
+ */
 rl.Game.prototype.setWorld = function(world) {this.world_ = world;};
+
+
+/**
+ * @return {?rl.map.WorldFunc}
+ */
 rl.Game.prototype.getWorld = function() {return this.world_;};
 
+
+/**
+ * @return {number}
+ */
 rl.Game.prototype.getBread = function() {return this.bread_;};
+
+
+/**
+ * @return {number}
+ */
 rl.Game.prototype.getHp = function() {return this.hp_;};
+
+
+/**
+ * @return {number}
+ */
 rl.Game.prototype.getScore = function() {return this.score_;};
+
+
+/**
+ * @return {number}
+ */
 rl.Game.prototype.getX = function() {return this.x_;};
+
+
+/**
+ * @return {number}
+ */
 rl.Game.prototype.getY = function() {return this.y_;};
 
+
+/**
+ * @return {boolean}
+ */
 rl.Game.prototype.isGameOver = function() {return this.gameOver_ != '';};
+
+
+/**
+ * @return {string}
+ */
 rl.Game.prototype.getGameOver = function() {return this.gameOver_;};
 
+
+/**
+ * @return {rl.Game.HungerState}
+ */
 rl.Game.prototype.getHungerState = function() {
   return rl.Game.hungerStates[this.hungerState_];
 };
 
+
+/**
+ * @param {rl.npc.NpcManager} manager
+ */
 rl.Game.prototype.addManager = function(manager) {
   this.managers_.push(manager);
 };
+
+
+/**
+ * @param {number} amount
+ */
+rl.Game.prototype.doDamage = function(amount) {
+  this.hp_ -= amount;
+  this.hp_ = Math.max(this.hp_, 0);
+}
 
 
 /**

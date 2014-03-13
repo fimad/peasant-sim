@@ -23,6 +23,10 @@ rl.npc.dogs.STARTING_MAX = 20;
 rl.npc.dogs.DOG_PROB = .2;
 
 
+/** @const {number} */
+rl.npc.dogs.JITTER = 10;
+
+
 /**
  * Takes a world function and an NPC manager and spawns a bunch of dogs.
  * @param {rl.map.WorldFunc} world A world function.
@@ -85,16 +89,28 @@ rl.npc.dogs.Dog.prototype.update = function(game) {
   ];
 
   goog.array.sort(moves, function(a, b) {
-    var aDist = Math.pow(game.getX() - a.x, 2) + Math.pow(game.getY() - a.y, 2);
-    var bDist = Math.pow(game.getX() - b.x, 2) + Math.pow(game.getY() - b.y, 2);
+    var aDist = Math.pow(game.getX() - a.x, 2)
+              + Math.pow(game.getY() - a.y, 2)
+              + (rl.npc.dogs.JITTER * Math.random());
+    var bDist = Math.pow(game.getX() - b.x, 2)
+              + Math.pow(game.getY() - b.y, 2)
+              + (rl.npc.dogs.JITTER * Math.random());
     return (aDist < bDist) ? -1 : (aDist == bDist) ? 0 : 1;
   });
 
   for (var i = 0; i < moves.length; i++) {
     var move = moves[i];
+
+    if (move.x == game.getX() && move.y == game.getY()) {
+      var spread = rl.npc.dogs.MAX_DAMAGE - rl.npc.dogs.MIN_DAMAGE;
+      game.doDamage(Math.floor(Math.random() * spread + rl.npc.dogs.MAX_DAMAGE));
+      break;
+    }
+
     if (!rl.map.isWalkable(game.getWorld()(move.x, move.y))) {
       continue;
     }
+
     this.moveTo(move.x, move.y);
     break;
   }
