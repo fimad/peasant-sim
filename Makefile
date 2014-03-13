@@ -52,9 +52,9 @@ ${DEPLOY_JS} : ${SRCS_JS}
 					--namespace=${NAMESPACE} \
 					--output_mode=${COMPILE_MODE} \
 					--compiler_flags=--warning_level=VERBOSE \
+					--compiler_flags=--compilation_level=ADVANCED_OPTIMIZATIONS \
 					${EXTERNS_FLAGS} \
 					--compiler_jar=${CLOSURE_COMPILER} > ${DEPLOY_JS}
-#					--compiler_flags=--compilation_level=ADVANCED_OPTIMIZATIONS \
 #			|| rm ${DEPLOY_JS}
 
 ${DEPLOY_CSS} : ${SRCS_CSS}

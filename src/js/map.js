@@ -41,24 +41,42 @@ rl.map.isWalkable = function(cells) {
 };
 
 
+rl.map.pickCell = function(z, list) {
+  var cell = list[list.length - 1].cell;
+  for (var i = 0; i < list.length; i++) {
+    if (z >= list[i].cutoff) {
+      cell = list[i].cell;
+    }
+  }
+  return cell;
+}
+
+
 /**
  * Generates a new procedurally generated world.
  * @return {rl.map.WorldFunc}
  */
 rl.map.newWorld = function() {
-  var noise = new SimplexNoise();
+  var terrainNoise = new SimplexNoise();
+  var floraNoise = new SimplexNoise();
+
   var cellGen = function(x, y) {
-    var z = (1 + noise.noise2D(x / 25, y / 25)) / 2;
-    for (var i = 0; i < rl.map._terrain.length; i++) {
-      if (rl.map._terrain[i].cutoff >= z) {
-        return [rl.map._terrain[i].cell];
-      }
+    var terrainZ = (1 + terrainNoise.noise2D(x / 25, y / 25)) / 2;
+    var floraZ = (1 + floraNoise.noise2D(x / 10, y / 10)) / 2;
+
+    var terrainCell = rl.map.pickCell(terrainZ, rl.map._terrain)
+    var floraCell = rl.map.pickCell(floraZ, rl.map._flora)
+
+    if (terrainCell.walkable) {
+      return [floraCell];
     }
-    return [rl.map._terrain[rl.map._terrain.length - 1].cell];
+    return [terrainCell];
   }
 
   // Make sure that the starting location is walkable.
-  if (!cellGen(0, 0)[0].walkable) {
+  if (!rl.map.isWalkable(cellGen(0, 0))) {
+    console.log(cellGen(0,0));
+    return;
     return rl.map.newWorld();
   }
   return cellGen;
@@ -74,7 +92,7 @@ rl.map._terrain = [
       color: '#3D9DF2',
       walkable: false
     },
-    cutoff: .05
+    cutoff: .00
   },
   {
     cell: {
@@ -83,7 +101,7 @@ rl.map._terrain = [
       color: '#3D9DF2',
       walkable: false
     },
-    cutoff: .15
+    cutoff: .1
   },
   {
     cell: {
@@ -92,12 +110,80 @@ rl.map._terrain = [
       color: '#DED1AD',
       walkable: true
     },
-    cutoff: .25
+    cutoff: .2
+  },
+  {
+    cell: {
+      name: 'dirt',
+      text: ':',
+      color: '#DED1AD',
+      walkable: true
+    },
+    cutoff: .4
+  },
+  {
+    cell: {
+      name: 'hills',
+      text: '&#9652;',
+      color: '#A8A8A8',
+      walkable: false
+    },
+    cutoff: .7
+  },
+  {
+    cell: {
+      name: 'mountains',
+      text: '&#9650;',
+      color: '#E6E6E6',
+      walkable: false
+    },
+    cutoff: .85
+  }
+];
+
+
+/** @type {Array.<{cell: rl.map.Cell, cutoff: number}>} */
+rl.map._flora = [
+  {
+    cell: {
+      name: 'dirt',
+      text: '.',
+      color: '#DED1AD',
+      walkable: true
+    },
+    cutoff: 0
+  },
+  {
+    cell: {
+      name: 'dirt',
+      text: ',',
+      color: '#DED1AD',
+      walkable: true
+    },
+    cutoff: .1,
   },
   {
     cell: {
       name: 'plains',
-      text: ',',
+      text: '\'',
+      color: '#FAF39B',
+      walkable: true
+    },
+    cutoff: .2,
+  },
+  {
+    cell: {
+      name: 'plains',
+      text: '"',
+      color: '#FAF39B',
+      walkable: true
+    },
+    cutoff: .3,
+  },
+  {
+    cell: {
+      name: 'shrubbery',
+      text: '"',
       color: '#9EA36F',
       walkable: true
     },
@@ -128,7 +214,7 @@ rl.map._terrain = [
       color: '#5BAD4C',
       walkable: true
     },
-    cutoff: .65
+    cutoff: .7
   },
   {
     cell: {
@@ -137,24 +223,6 @@ rl.map._terrain = [
       color: '#5BAD4C',
       walkable: true
     },
-    cutoff: .7
-  },
-  {
-    cell: {
-      name: 'hills',
-      text: '&#9652;',
-      color: '#A8A8A8',
-      walkable: false
-    },
-    cutoff: .9
-  },
-  {
-    cell: {
-      name: 'mountains',
-      text: '&#9650;',
-      color: '#E6E6E6',
-      walkable: false
-    },
-    cutoff: 1
+    cutoff: .8
   }
 ];

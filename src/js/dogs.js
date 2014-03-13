@@ -12,7 +12,7 @@ rl.npc.dogs.MAX_DAMAGE = 4;
 
 
 /** @const {number} */
-rl.npc.dogs.STARTING_MIN = 5;
+rl.npc.dogs.STARTING_MIN = 1;
 
 
 /** @const {number} */
@@ -24,7 +24,7 @@ rl.npc.dogs.DOG_PROB = .2;
 
 
 /** @const {number} */
-rl.npc.dogs.JITTER = 10;
+rl.npc.dogs.JITTER = 2;
 
 
 /**
