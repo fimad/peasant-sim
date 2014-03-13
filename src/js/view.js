@@ -1,4 +1,6 @@
 goog.provide('rl.view');
+goog.require('rl.map');
+
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
@@ -23,7 +25,8 @@ rl.view._message = null;
 /** @type{Array.<Array.<Element>>} */
 rl.view._cells = null;
 
-/** @type{?function(number, number): string} */
+
+/** @type{?rl.map.WorldFunc} */
 rl.view._cellGen = null;
 
 
@@ -34,7 +37,7 @@ rl.view.init = function() {
   rl.view._message = goog.dom.getElement('message');
   goog.events.listen(window, goog.events.EventType.RESIZE, rl.view.onResize);
   rl.view.onResize();
-}
+};
 
 
 /**
@@ -44,7 +47,7 @@ rl.view.setStatus = function(left, right) {
   var bars = goog.dom.getChildren(goog.dom.getElement('status'));
   bars[0].innerHTML = left;
   bars[1].innerHTML = right;
-}
+};
 
 
 /**
@@ -93,18 +96,18 @@ rl.view.onResize = function() {
   rl.view.redraw();
 
   goog.dom.replaceNode(root, oldRoot);
-}
+};
 
 
 /**
  * Sets the cell generating function and redraws the view.
- * @param{function(number, number): string} cellGen is a call back that will be
+ * @param{rl.map.WorldFunc} cellGen is a call back that will be
  *     used to generate the text for each of the cells.
  */
 rl.view.setCellGenerator = function(cellGen) {
   rl.view._cellGen = cellGen;
   rl.view.redraw();
-}
+};
 
 
 /** Redraws the view with the current cell generating function. */
@@ -120,9 +123,9 @@ rl.view.redraw = function() {
     for(var y = 0; y < height; y++) {
       var dx = x - Math.floor(width / 2);
       var dy = y - Math.floor(height / 2);
-      var cell = rl.view._cellGen(dx, dy);
+      var cell = rl.view._cellGen(dx, dy)[0];
       rl.view._cells[x][y].innerHTML = cell.text;
       rl.view._cells[x][y].style.color = cell.color;
     }
   }
-}
+};

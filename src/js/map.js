@@ -1,5 +1,6 @@
 goog.provide('rl.map');
-goog.require('rl.view');
+
+goog.require('goog.array');
 
 /**
  * @typedef {{
@@ -22,7 +23,27 @@ rl.map.Terrain;
 
 
 /**
+ * @typedef {function(number, number): !Array.<rl.map.Cell>}
+ */
+rl.map.WorldFunc;
+
+
+/**
+ * Given an array of cells returns true if all of the cells are walkable and
+ * false otherwise.
+ * @param {Array.<rl.map.Cell>} cells
+ * @return {boolean}
+ */
+rl.map.isWalkable = function(cells) {
+  return !goog.array.some(cells, function(cell) {
+    return cell.walkable == false
+  });
+};
+
+
+/**
  * Generates a new procedurally generated world.
+ * @return {rl.map.WorldFunc}
  */
 rl.map.newWorld = function() {
   var noise = new SimplexNoise();
@@ -30,21 +51,21 @@ rl.map.newWorld = function() {
     var z = (1 + noise.noise2D(x / 25, y / 25)) / 2;
     for (var i = 0; i < rl.map._terrain.length; i++) {
       if (rl.map._terrain[i].cutoff >= z) {
-        return rl.map._terrain[i].cell;
+        return [rl.map._terrain[i].cell];
       }
     }
-    return rl.map._terrain[rl.map._terrain.length - 1].cell;
+    return [rl.map._terrain[rl.map._terrain.length - 1].cell];
   }
 
   // Make sure that the starting location is walkable.
-  if (!cellGen(0, 0).walkable) {
+  if (!cellGen(0, 0)[0].walkable) {
     return rl.map.newWorld();
   }
   return cellGen;
-}
+};
 
 
-/** @type {Array.<rl.map.Cell>} */
+/** @type {Array.<{cell: rl.map.Cell, cutoff: number}>} */
 rl.map._terrain = [
   {
     cell: {

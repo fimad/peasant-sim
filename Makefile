@@ -17,9 +17,12 @@ THIRD_PARTY=third_party
 CSS_DIR=${SRC_DIR}/css
 HTML_DIR=${SRC_DIR}/html
 JS_DIR=${SRC_DIR}/js
+EXTERN_DIR=externs/
 
 SRCS_JS=${JS_DIR}/*.js
 SRCS_CSS=${CSS_DIR}/*.less
+
+EXTERNS_FLAGS=`echo ${EXTERN_DIR}/*.js | sed -r 's/(^| )/\1--compiler_flags=--externs=/g'`
 
 DEPLOY_JS=${GEN_DIR}/deploy.js
 DEPLOY_CSS=${GEN_DIR}/styles.css
@@ -49,6 +52,7 @@ ${DEPLOY_JS} : ${SRCS_JS}
 					--namespace=${NAMESPACE} \
 					--output_mode=${COMPILE_MODE} \
 					--compiler_flags=--warning_level=VERBOSE \
+					${EXTERNS_FLAGS} \
 					--compiler_jar=${CLOSURE_COMPILER} > ${DEPLOY_JS}
 #					--compiler_flags=--compilation_level=ADVANCED_OPTIMIZATIONS \
 #			|| rm ${DEPLOY_JS}

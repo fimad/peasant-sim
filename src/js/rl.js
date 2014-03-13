@@ -1,5 +1,7 @@
 goog.provide('rl');
-goog.require('rl.dogs');
+goog.require('rl.Game');
+goog.require('rl.npc.NpcManager');
+goog.require('rl.npc.dogs');
 goog.require('rl.map');
 goog.require('rl.view');
 
@@ -9,57 +11,28 @@ goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 
 
-/** @const {number} */
-rl.MAX_HP = 13;
+/** @type{Object.<goog.events.KeyCodes, rl.Game.Command>} */
+rl.controls_ = {};
+rl.controls_[goog.events.KeyCodes.LEFT] = rl.Game.Command.MOVE_LEFT;
+rl.controls_[goog.events.KeyCodes.DOWN] = rl.Game.Command.MOVE_DOWN;
+rl.controls_[goog.events.KeyCodes.UP] = rl.Game.Command.MOVE_UP;
+rl.controls_[goog.events.KeyCodes.RIGHT] = rl.Game.Command.MOVE_RIGHT;
 
+rl.controls_[goog.events.KeyCodes.H] = rl.Game.Command.MOVE_LEFT;
+rl.controls_[goog.events.KeyCodes.J] = rl.Game.Command.MOVE_DOWN;
+rl.controls_[goog.events.KeyCodes.K] = rl.Game.Command.MOVE_UP;
+rl.controls_[goog.events.KeyCodes.L] = rl.Game.Command.MOVE_RIGHT;
 
-/** @const {number} */
-rl.MAX_BREAD = 800;
-
-
-/** @const {number} */
-rl.BREAD_SLICE = rl.MAX_BREAD / 5;
-
-
-/** @const {number} */
-rl.BREAD_FILL_UP = 2;
-
-
-/** @const {number} */
-rl.STEPS_PER_STATE = 10;
-
-
-/** @const {string} */
-rl.GAME_OVER_STARVED = 'dead_starved';
-
-
-/** @const {string} */
-rl.GAME_OVER_EATEN = 'dead_eaten';
-
-
-/** @typedef {{
- *  name: string,
- *  color: string
- * }} */
-rl.HungerState;
-
-
-/** @type {Array.<rl.HungerState>} */
-rl.hungerStates = [
-  {name: 'sated', color: '#FFF'},
-  {name: 'content', color: '#FFF'},
-  {name: 'peckish', color: '#FFF'},
-  {name: 'hungry', color: '#FFF'},
-  {name: 'hungry!', color: '#FFEA8C'},
-  {name: 'STARVING!', color: '#FF0000'}
-];
+rl.controls_[goog.events.KeyCodes.SPACE] = rl.Game.Command.EAT;
+rl.controls_[goog.events.KeyCodes.PERIOD] = rl.Game.Command.PAUSE;
 
 
 /** Called on page load to set up the initial handlers and DOM. */
 rl.init = function() {
   rl.view.init();
   rl.intro();
-}
+};
+goog.exportSymbol('rl.init', rl.init);
 
 
 /**
@@ -96,116 +69,79 @@ rl.intro = function() {
       rl.newGame(world);
     }
   });
-}
+};
+
+
+/**
+ * @param {!Array.<rl.map.WorldFunc>} overlays
+ * @return {rl.map.WorldFunc}
+ */
+rl.makeWorld = function(overlays) {
+  return function(x, y) {
+    return goog.array.flatten(
+        goog.array.map(overlays, function(overlay){
+          return overlay(x, y);
+        }));
+  };
+};
+
 
 /**
  *
  */
-rl.newGame = function(world) {
-  var x = 0;
-  var y = 0;
-  var hp = rl.MAX_HP;
-  var bread = rl.MAX_BREAD;
-  var score = 0;
-  var state = 0;
-  var stateSteps = 0;
-  var gameOver = '';
+rl.newGame = function(terrain) {
+  var game = new rl.Game();
+  var npcMan = new rl.npc.NpcManager();
 
-  var dogs = rl.dogs.spawn(world);
+  var world = rl.makeWorld([
+      goog.bind(game.overlay, game),
+      goog.bind(npcMan.overlay, npcMan),
+      terrain]);
+
+  rl.npc.dogs.spawn(world, npcMan);
+  game.addManager(npcMan);
+  game.setWorld(world);
 
   // Replace the cell generator with one that displays the current user.
   rl.view.setCellGenerator(function(dx, dy) {
-    if (dx == 0 && dy == 0) {
-      return {text: '@', color: '#FFF'};
-    }
-    return rl.dogs.overlay(dogs, world)(x + dx, y + dy);
+    return world(game.getX() + dx, game.getY() + dy);
   });
-  rl.updateStatus(hp, bread, state, score);
+  rl.updateStatus(game);
 
-  var key =
-      goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
-    var newX = x, newY = y;
-    var step = true;
+  var key = goog.events.listen(
+      window,
+      goog.events.EventType.KEYDOWN,
+      function(e) {
+        var command = rl.controls_[e.keyCode];
+        if (command != undefined) {
+          game.update(command);
 
-    switch (e.keyCode) {
-      case goog.events.KeyCodes.H:
-      case goog.events.KeyCodes.LEFT:
-        newX--; break;
-      case goog.events.KeyCodes.J:
-      case goog.events.KeyCodes.DOWN:
-        newY++; break;
-      case goog.events.KeyCodes.K:
-      case goog.events.KeyCodes.UP:
-        newY--; break;
-      case goog.events.KeyCodes.L:
-      case goog.events.KeyCodes.RIGHT:
-        newX++; break;
-      case goog.events.KeyCodes.SPACE:
-        if (bread > 0) {
-          state = Math.max(0, state - rl.BREAD_FILL_UP);
-          bread -= rl.BREAD_SLICE;
+          rl.updateStatus(game);
+          rl.view.redraw();
+
+          if (game.isGameOver()) {
+            goog.events.unlistenByKey(key);
+            rl.gameOver(game.getGameOver());
+          }
         }
-        break;
-      case goog.events.KeyCodes.PERIOD:
-        break;
-      default:
-        step = false;
-    }
-
-    // Ignore non-control key strokes.
-    if (!step) {
-      return;
-    }
-
-    score++;
-    stateSteps++;
-
-    hp -= rl.dogs.update(dogs, world, x, y);
-    hp = Math.max(0, hp);
-    if (hp == 0) {
-      gameOver = rl.GAME_OVER_EATEN;
-    }
-
-    if (stateSteps >= rl.STEPS_PER_STATE) {
-      stateSteps = 0;
-      state++;
-      if (state == rl.hungerStates.length) {
-        state--;
-        hp = 0;
-        gameOver = rl.GAME_OVER_STARVED;
-      }
-    }
-
-    var newCell = world(newX, newY);
-    if (newCell.walkable) {
-      x = newX;
-      y = newY;
-    }
-
-    rl.updateStatus(hp, bread, state, score);
-    rl.view.redraw();
-
-    if (gameOver != '') {
-      goog.events.unlistenByKey(key);
-      rl.gameOver(gameOver);
-    }
-  });
-}
+      });
+};
 
 
 /** Updates the in game status bar. */
-rl.updateStatus = function(hp, bread, state, score) {
-  var hunger = rl.hungerStates[state];
-  var right = 'Score: ' + score;
+rl.updateStatus = function(game) {
+  var hunger = game.getHungerState();
+  var right = 'Score: ' + game.getScore();
   var left =
       'Peasant | ' +
-      hp + '/' + rl.MAX_HP + ' HP | ' +
-      Math.floor(bread) + 'g bread | ' +
+      game.getHp() + '/' + rl.Game.MAX_HP + ' HP | ' +
+      Math.floor(game.getBread()) + 'g bread | ' +
       '<span style="color: ' + hunger.color + '">' + hunger.name + '</span>';
   rl.view.setStatus(left, right);
-}
+};
 
 
+/** @param {string} cause The id of the message slide to display.  */
 rl.gameOver = function(cause) {
   var causeElem = goog.dom.getElement(cause);
   var welcomeElem = goog.dom.getElement('welcome');
@@ -225,4 +161,4 @@ rl.gameOver = function(cause) {
     goog.events.unlistenByKey(key);
     rl.intro();
   });
-}
+};
