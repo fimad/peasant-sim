@@ -1,6 +1,7 @@
+goog.provide('rl.npc.Manager');
 goog.provide('rl.npc.Npc');
-goog.provide('rl.npc.NpcManager');
 goog.require('rl.Game');
+goog.require('rl.SparseMap');
 goog.require('rl.map');
 
 
@@ -54,13 +55,13 @@ rl.npc.Npc.prototype.getCell = goog.abstractMethod;
 
 
 /**
- * NpcManager maintains a set of all active NPCs and handles updating and
+ * Manager maintains a set of all active NPCs and handles updating and
  * drawing them in the world.
  *
  * @constructor
  * @extends {rl.Manager}
  */
-rl.npc.NpcManager = function() {
+rl.npc.Manager = function() {
   /**
    * @type {!Array.<!rl.npc.Npc>}
    * @private
@@ -68,12 +69,12 @@ rl.npc.NpcManager = function() {
   this.npcs_ = [];
 
   /**
-   * @type {!Object.<number, !Object.<number, !rl.npc.Npc>>}
+   * @type {rl.SparseMap.<rl.npc.Npc>}
    * @private
    */
-  this.npcCache_ = {};
+  this.npcCache_ = new rl.SparseMap();
 };
-goog.inherits(rl.npc.NpcManager, rl.Manager);
+goog.inherits(rl.npc.Manager, rl.Manager);
 
 
 /**
@@ -81,52 +82,23 @@ goog.inherits(rl.npc.NpcManager, rl.Manager);
  * @param {rl.npc.Npc} npc
  * @return {boolean}
  */
-rl.npc.NpcManager.prototype.add = function(npc) {
+rl.npc.Manager.prototype.add = function(npc) {
   var pos = npc.getPos();
   this.npcs_.push(npc);
-  if (this.cacheGet(pos.x, pos.y)) {
+  if (this.npcCache_.get(pos.x, pos.y)) {
     return false;
   }
-  this.cacheAdd(pos.x, pos.y, npc);
+  this.npcCache_.add(pos.x, pos.y, npc);
   return true;
 };
 
 
 /**
- * @param {number} x
- * @param {number} y
- * @param {rl.npc.Npc} npc
+ * Removes all NPCs from the manager;
  */
-rl.npc.NpcManager.prototype.cacheAdd = function(x, y, npc) {
-  var yCache = this.npcCache_[x];
-  if (!yCache) {
-    yCache = {};
-    this.npcCache_[x] = yCache;
-  }
-  yCache[y] = npc;
-};
-
-
-/**
- * @param {number} x
- * @param {number} y
- */
-rl.npc.NpcManager.prototype.cacheRemove = function(x, y) {
-  if (Object.keys(this.npcCache_[x]).length == 1 && this.npcCache_[x][y]) {
-    delete this.npcCache_[x];
-  } else if (Object.keys(this.npcCache_[x]).length > 1 && this.npcCache_[x][y]) {
-    delete this.npcCache_[x][y];
-  }
-};
-
-
-/**
- * @param {number} x
- * @param {number} y
- * @return {rl.npc.Npc}
- */
-rl.npc.NpcManager.prototype.cacheGet = function(x, y) {
-  return (!this.npcCache_[x]) ? null : this.npcCache_[x][y];
+rl.npc.Manager.prototype.clear = function() {
+  this.npcs_ = [];
+  this.npcCache_.clear();
 };
 
 
@@ -135,15 +107,15 @@ rl.npc.NpcManager.prototype.cacheGet = function(x, y) {
  * @override
  * @param {rl.Game} game
  */
-rl.npc.NpcManager.prototype.update = function(game) {
+rl.npc.Manager.prototype.update = function(game) {
   for (var i = 0; i < this.npcs_.length; i++) {
     var npc = this.npcs_[i];
     var oldPos = npc.getPos();
     npc.update(game);
     var newPos = npc.getPos();
     if (oldPos != newPos) {
-      this.cacheRemove(oldPos.x, oldPos.y);
-      this.cacheAdd(newPos.x, newPos.y, npc);
+      this.npcCache_.remove(oldPos.x, oldPos.y);
+      this.npcCache_.add(newPos.x, newPos.y, npc);
     }
   }
 };
@@ -152,7 +124,7 @@ rl.npc.NpcManager.prototype.update = function(game) {
 /**
  * @type {rl.map.WorldFunc}
  */
-rl.npc.NpcManager.prototype.overlay = function(x, y) {
-  var npc = this.cacheGet(x, y);
+rl.npc.Manager.prototype.overlay = function(x, y) {
+  var npc = this.npcCache_.get(x, y);
   return (npc != null) ? [npc.getCell()] : [];
 };

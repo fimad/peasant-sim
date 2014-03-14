@@ -1,6 +1,7 @@
 /** @fileoverview Definitions for the simplex-noise library. */
 
 
+
 /**
  * @constructor
  */

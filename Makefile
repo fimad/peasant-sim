@@ -1,4 +1,4 @@
-# A simple make file for 7DRL
+# A simple make file for Peasant Simulator
 #
 # This make file depends on two environment variables for locating the Closure
 # installation. The first is ${CLOSURE_ROOT} which should point to the base of

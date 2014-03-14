@@ -1,12 +1,15 @@
 goog.provide('rl');
 goog.require('rl.Game');
-goog.require('rl.npc.NpcManager');
-goog.require('rl.npc.dogs');
 goog.require('rl.map');
+goog.require('rl.map.town.Manager');
+goog.require('rl.npc.Manager');
+goog.require('rl.npc.dogs');
 goog.require('rl.view');
 
 goog.require('goog.dom');
+goog.require('goog.dom.classes');
 goog.require('goog.events');
+goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 
@@ -44,15 +47,15 @@ rl.intro = function() {
   var world = rl.map.newWorld();
   rl.view.setCellGenerator(world);
 
-  var key =
-      goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
+  var key = null;
+  var listener = function(e) {
     if (e.keyCode != goog.events.KeyCodes.SPACE) {
       return;
     }
 
     var i = 0;
     var message = goog.dom.getElement('message');
-    var slides = goog.dom.getChildren(message);
+    var slides = goog.dom.getElementsByClass('slide', message);
     for (i = 0; i < slides.length - 1; i++) {
       if (!goog.dom.classes.has(slides[i], 'hidden')) {
         goog.dom.classes.add(slides[i], 'hidden');
@@ -68,7 +71,8 @@ rl.intro = function() {
       goog.events.unlistenByKey(key);
       rl.newGame(world);
     }
-  });
+  };
+  key = goog.events.listen(window, goog.events.EventType.KEYUP, listener);
 };
 
 
@@ -87,19 +91,23 @@ rl.makeWorld = function(overlays) {
 
 
 /**
- *
+ * @param {rl.map.WorldFunc} terrain A world function that will returns static
+ *     terrain cells.
  */
 rl.newGame = function(terrain) {
   var game = new rl.Game();
-  var npcMan = new rl.npc.NpcManager();
+  var npcMan = new rl.npc.Manager();
+  var townMan = new rl.map.town.Manager(terrain, npcMan);
 
   var world = rl.makeWorld([
       goog.bind(game.overlay, game),
       goog.bind(npcMan.overlay, npcMan),
+      goog.bind(townMan.overlay, townMan),
       terrain]);
 
-  rl.npc.dogs.spawn(world, npcMan);
+  rl.npc.dogs.spawn(game, npcMan);
   game.addManager(npcMan);
+  game.addManager(townMan);
   game.setWorld(world);
 
   // Replace the cell generator with one that displays the current user.
@@ -108,23 +116,32 @@ rl.newGame = function(terrain) {
   });
   rl.updateStatus(game);
 
-  var key = goog.events.listen(
-      window,
-      goog.events.EventType.KEYDOWN,
-      function(e) {
-        var command = rl.controls_[e.keyCode];
-        if (command != undefined) {
-          game.update(command);
+  var key = null;
+  var message = goog.dom.getElement('message');
 
-          rl.updateStatus(game);
-          rl.view.redraw();
+  var listener = function(e) {
+    if (!goog.dom.classes.has(message, 'hidden')) {
+      return;
+    }
 
-          if (game.isGameOver()) {
-            goog.events.unlistenByKey(key);
-            rl.gameOver(game.getGameOver());
-          }
-        }
-      });
+    var command = rl.controls_[e.keyCode];
+    if (command != undefined) {
+      game.update(command);
+
+      rl.updateStatus(game);
+      rl.view.redraw();
+
+      if (townMan.inTown()) {
+        rl.showMessage('town', listener);
+      }
+
+      if (game.isGameOver()) {
+        goog.events.unlistenByKey(key);
+        rl.gameOver(game.getGameOver());
+      }
+    }
+  };
+  key = goog.events.listen(window, goog.events.EventType.KEYUP, listener);
 };
 
 
@@ -151,7 +168,7 @@ rl.gameOver = function(cause) {
   goog.dom.classes.remove(messageElem, 'hidden');
 
   var key =
-      goog.events.listen(window, goog.events.EventType.KEYDOWN, function(e) {
+      goog.events.listen(window, goog.events.EventType.KEYUP, function(e) {
     if (e.keyCode != goog.events.KeyCodes.SPACE) {
       return;
     }
@@ -161,4 +178,31 @@ rl.gameOver = function(cause) {
     goog.events.unlistenByKey(key);
     rl.intro();
   });
+};
+
+
+/**
+ * @param {string} slideId The id of the message slide to display.
+ * @param {function(goog.events.Event)} prevListener The event listener that
+ *     should be set after the message is dismissed.
+ */
+rl.showMessage = function(slideId, prevListener) {
+  var slide = goog.dom.getElement(slideId);
+  var message = goog.dom.getElement('message');
+
+  goog.dom.classes.remove(slide, 'hidden');
+  goog.dom.classes.remove(message, 'hidden');
+
+  var key = null;
+  var listener = function(e) {
+    if (e.keyCode != goog.events.KeyCodes.SPACE) {
+      return;
+    }
+
+    goog.dom.classes.add(slide, 'hidden');
+    goog.dom.classes.add(message, 'hidden');
+    goog.events.unlistenByKey(key);
+    goog.events.listen(window, goog.events.EventType.KEYUP, prevListener);
+  };
+  key = goog.events.listen(window, goog.events.EventType.KEYUP, listener);
 };

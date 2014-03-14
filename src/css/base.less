@@ -53,10 +53,10 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  margin-top: -2.5em;
+  margin-top: -5em;
   margin-left: -15em;
   padding-bottom: .5em;
-  height: 5em;
+  min-height: 5em;
   width: 30em;
   z-index: 1;
 
@@ -65,14 +65,49 @@ body {
   border-style: inset;
   border-width: 5px;
   border-color: @color;
+
+  padding-top: 1em;
+  padding-right: 1em;
+  padding-left: 1em;
+}
+
+.message > .continue {
+  width: 30em;
+  text-align: center;
+  float: left;
+  margin-top: 2em;
+  color: #a8a8a8;
 }
 
 .message > .slide {
-  position: absolute;
-  top: 0px;
-  left: 0px;
+  float: left;
   width: 100%;
   text-align: center;
+}
+
+.message > .slide > .left {
+  width: 12.5em;
+  text-align: right;
+  float: left;
+}
+
+.message > .slide > .right {
+  width: 12.5em;
+  text-align: left;
+  float: right;
+}
+
+.message > .slide > .full {
+  width: 30em;
+  text-align: center;
+  float: left;
+}
+
+.message > .slide > .header {
+  width: 30em;
+  text-align: center;
+  float: left;
+  margin-bottom: 1em;
 }
 
 .hidden {

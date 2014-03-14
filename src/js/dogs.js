@@ -1,5 +1,6 @@
 goog.provide('rl.npc.dogs');
 goog.require('rl.map');
+goog.require('rl.npc.Manager');
 goog.require('rl.npc.Npc');
 
 
@@ -8,7 +9,7 @@ rl.npc.dogs.MIN_DAMAGE = 1;
 
 
 /** @const {number} */
-rl.npc.dogs.MAX_DAMAGE = 4;
+rl.npc.dogs.MAX_DAMAGE = 3;
 
 
 /** @const {number} */
@@ -20,33 +21,35 @@ rl.npc.dogs.STARTING_MAX = 20;
 
 
 /** @const {number} */
-rl.npc.dogs.DOG_PROB = .2;
+rl.npc.dogs.DOG_PROB = .02;
 
 
 /** @const {number} */
-rl.npc.dogs.JITTER = 2;
+rl.npc.dogs.JITTER = 6;
 
 
 /**
  * Takes a world function and an NPC manager and spawns a bunch of dogs.
- * @param {rl.map.WorldFunc} world A world function.
- * @param {rl.npc.NpcManager} manager The NpcManager to register the dogs with.
+ * @param {rl.Game} game The current game state.
+ * @param {rl.npc.Manager} manager The NPC manager to register the dogs with.
  */
-rl.npc.dogs.spawn = function(world, manager) {
+rl.npc.dogs.spawn = function(game, manager) {
   // Randomly choose a quadrant to spawn all of the dogs in.
   var randSign = function() {return (Math.random() > .5) ? -1 : 1;};
   var xSign = randSign();
   var ySign = randSign();
 
-  for (var x = rl.npc.dogs.STARTING_MIN; x < rl.npc.dogs.STARTING_MAX; x++) {
-    for (var y = rl.npc.dogs.STARTING_MIN; y < rl.npc.dogs.STARTING_MAX; y++) {
+  //for (var x = rl.npc.dogs.STARTING_MIN; x < rl.npc.dogs.STARTING_MAX; x++) {
+  //  for (var y = rl.npc.dogs.STARTING_MIN; y < rl.npc.dogs.STARTING_MAX; y++) {
+  for (var x = -rl.npc.dogs.STARTING_MAX; x < rl.npc.dogs.STARTING_MAX; x++) {
+    for (var y = -rl.npc.dogs.STARTING_MAX; y < rl.npc.dogs.STARTING_MAX; y++) {
       if (Math.random() > rl.npc.dogs.DOG_PROB) {
         continue;
       }
 
-      var realX = xSign * x;
-      var realY = ySign * y;
-      var cell = world(realX, realY);
+      var realX = x + game.getX();
+      var realY = y + game.getY();
+      var cell = game.getWorld()(realX, realY);
       if (rl.map.isWalkable(cell)) {
         manager.add(new rl.npc.dogs.Dog(realX, realY));
       }

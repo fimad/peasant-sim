@@ -83,10 +83,10 @@ rl.Game = function() {
   this.managers_ = [];
 
   /**
-   * @type {?rl.map.WorldFunc}
+   * @type {rl.map.WorldFunc}
    * @private
    */
-  this.world_ = null;
+  this.world_ = function(x, y) {return [];};
 };
 
 
@@ -161,55 +161,73 @@ rl.Game.Command = {
 /**
  * @param {rl.map.WorldFunc} world
  */
-rl.Game.prototype.setWorld = function(world) {this.world_ = world;};
+rl.Game.prototype.setWorld = function(world) {
+  this.world_ = world;
+};
 
 
 /**
- * @return {?rl.map.WorldFunc}
+ * @return {rl.map.WorldFunc}
  */
-rl.Game.prototype.getWorld = function() {return this.world_;};
-
-
-/**
- * @return {number}
- */
-rl.Game.prototype.getBread = function() {return this.bread_;};
+rl.Game.prototype.getWorld = function() {
+  return this.world_;
+};
 
 
 /**
  * @return {number}
  */
-rl.Game.prototype.getHp = function() {return this.hp_;};
+rl.Game.prototype.getBread = function() {
+  return this.bread_;
+};
 
 
 /**
  * @return {number}
  */
-rl.Game.prototype.getScore = function() {return this.score_;};
+rl.Game.prototype.getHp = function() {
+  return this.hp_;
+};
 
 
 /**
  * @return {number}
  */
-rl.Game.prototype.getX = function() {return this.x_;};
+rl.Game.prototype.getScore = function() {
+  return this.score_;
+};
 
 
 /**
  * @return {number}
  */
-rl.Game.prototype.getY = function() {return this.y_;};
+rl.Game.prototype.getX = function() {
+  return this.x_;
+};
+
+
+/**
+ * @return {number}
+ */
+rl.Game.prototype.getY = function() {
+  return this.y_;
+};
 
 
 /**
  * @return {boolean}
  */
-rl.Game.prototype.isGameOver = function() {return this.gameOver_ != '';};
+rl.Game.prototype.isGameOver = function() {
+  return this.gameOver_ != '';
+};
 
 
 /**
  * @return {string}
  */
-rl.Game.prototype.getGameOver = function() {return this.gameOver_;};
+rl.Game.prototype.getGameOver = function() {
+  return this.gameOver_;
+};
 
 
 /**
@@ -221,7 +239,7 @@ rl.Game.prototype.getHungerState = function() {
 
 
 /**
- * @param {rl.npc.NpcManager} manager
+ * @param {rl.Manager} manager
  */
 rl.Game.prototype.addManager = function(manager) {
   this.managers_.push(manager);
@@ -238,6 +256,19 @@ rl.Game.prototype.doDamage = function(amount) {
 
 
 /**
+ * Resets the health, bread and hunger.
+ */
+rl.Game.prototype.rest = function() {
+  this.hp_ = rl.Game.MAX_HP;
+  this.bread_ = rl.Game.MAX_BREAD;
+  this.hungerState_ = 0;
+  this.hungerSteps_ = 0;
+};
+
+
+/**
+ * Updates the game state by one step. Returns the id of a slide to be displayed
+ * or null.
  * @param {rl.Game.Command} command
  */
 rl.Game.prototype.update = function(command) {
@@ -257,6 +288,7 @@ rl.Game.prototype.update = function(command) {
         this.hungerState_ -= rl.Game.BREAD_FILL_UP;
         this.hungerState_ = Math.max(0, this.hungerState_);
         this.bread_ -= rl.Game.BREAD_SLICE;
+        this.bread_ = Math.max(0, this.bread_);
       }
       break;
   }

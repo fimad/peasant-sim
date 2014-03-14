@@ -75,8 +75,6 @@ rl.map.newWorld = function() {
 
   // Make sure that the starting location is walkable.
   if (!rl.map.isWalkable(cellGen(0, 0))) {
-    console.log(cellGen(0,0));
-    return;
     return rl.map.newWorld();
   }
   return cellGen;
@@ -160,7 +158,7 @@ rl.map._flora = [
       color: '#DED1AD',
       walkable: true
     },
-    cutoff: .1,
+    cutoff: .1
   },
   {
     cell: {
@@ -169,7 +167,7 @@ rl.map._flora = [
       color: '#FAF39B',
       walkable: true
     },
-    cutoff: .2,
+    cutoff: .2
   },
   {
     cell: {
@@ -178,7 +176,7 @@ rl.map._flora = [
       color: '#FAF39B',
       walkable: true
     },
-    cutoff: .3,
+    cutoff: .3
   },
   {
     cell: {
