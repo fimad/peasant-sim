@@ -35,8 +35,8 @@ rl.map.WorldFunc;
  * @return {boolean}
  */
 rl.map.isWalkable = function(cells) {
-  return !goog.array.some(cells, function(cell) {
-    return cell.walkable == false
+  return goog.array.every(cells, function(cell) {
+    return cell.walkable == true
   });
 };
 

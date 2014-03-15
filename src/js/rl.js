@@ -99,20 +99,19 @@ rl.newGame = function(terrain) {
   var npcMan = new rl.npc.Manager();
   var townMan = new rl.map.town.Manager(terrain, npcMan);
 
-  var world = rl.makeWorld([
+  game.setWorld(rl.makeWorld([
       goog.bind(game.overlay, game),
       goog.bind(npcMan.overlay, npcMan),
       goog.bind(townMan.overlay, townMan),
-      terrain]);
+      terrain]));
 
   rl.npc.dogs.spawn(game, npcMan);
   game.addManager(npcMan);
   game.addManager(townMan);
-  game.setWorld(world);
 
   // Replace the cell generator with one that displays the current user.
   rl.view.setCellGenerator(function(dx, dy) {
-    return world(game.getX() + dx, game.getY() + dy);
+    return game.getWorld()(game.getX() + dx, game.getY() + dy);
   });
   rl.updateStatus(game);
 

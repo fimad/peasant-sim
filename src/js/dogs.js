@@ -13,11 +13,7 @@ rl.npc.dogs.MAX_DAMAGE = 3;
 
 
 /** @const {number} */
-rl.npc.dogs.STARTING_MIN = 1;
-
-
-/** @const {number} */
-rl.npc.dogs.STARTING_MAX = 20;
+rl.npc.dogs.RADIUS = 20;
 
 
 /** @const {number} */
@@ -34,15 +30,8 @@ rl.npc.dogs.JITTER = 6;
  * @param {rl.npc.Manager} manager The NPC manager to register the dogs with.
  */
 rl.npc.dogs.spawn = function(game, manager) {
-  // Randomly choose a quadrant to spawn all of the dogs in.
-  var randSign = function() {return (Math.random() > .5) ? -1 : 1;};
-  var xSign = randSign();
-  var ySign = randSign();
-
-  //for (var x = rl.npc.dogs.STARTING_MIN; x < rl.npc.dogs.STARTING_MAX; x++) {
-  //  for (var y = rl.npc.dogs.STARTING_MIN; y < rl.npc.dogs.STARTING_MAX; y++) {
-  for (var x = -rl.npc.dogs.STARTING_MAX; x < rl.npc.dogs.STARTING_MAX; x++) {
-    for (var y = -rl.npc.dogs.STARTING_MAX; y < rl.npc.dogs.STARTING_MAX; y++) {
+  for (var x = -rl.npc.dogs.RADIUS; x < rl.npc.dogs.RADIUS; x++) {
+    for (var y = -rl.npc.dogs.RADIUS; y < rl.npc.dogs.RADIUS; y++) {
       if (Math.random() > rl.npc.dogs.DOG_PROB) {
         continue;
       }
