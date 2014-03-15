@@ -419,11 +419,11 @@ rl.Game.prototype.update = function(command) {
  */
 rl.Game.prototype.overlay = function(x, y) {
   var cells = [];
-  if (this.crumbCache_.get(x, y)) {
-    cells.push(rl.Game.CRUMB_CELL);
-  }
   if (this.x_ == x && this.y_ == y) {
     cells.push(rl.Game.SELF_CELL);
+  }
+  if (this.crumbCache_.get(x, y)) {
+    cells.push(rl.Game.CRUMB_CELL);
   }
   return cells;
 };
