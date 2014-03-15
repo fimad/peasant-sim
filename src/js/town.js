@@ -86,7 +86,7 @@ rl.map.town.Manager.prototype.update = function(game) {
  * @type {rl.map.WorldFunc}
  */
 rl.map.town.Manager.prototype.overlay = function(x, y) {
-  var townZ = (1 + this.noise_.noise2D(x / 5, y / 5)) / 2;
+  var townZ = (1 + this.noise_.noise2D(x / 4, y / 4)) / 2;
   return (townZ > .99 &&
           rl.map.isWalkable(this.terrain_(x, y)) &&
           !this.visited_.get(x, y))
