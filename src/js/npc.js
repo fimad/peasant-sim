@@ -39,7 +39,7 @@ rl.npc.Npc.prototype.moveTo = function(x, y) {
 };
 
 
-/** @return {{x: number, y: number}} */
+/** @return {rl.map.Position} */
 rl.npc.Npc.prototype.getPos = function() {
   return {x: this.x_, y: this.y_};
 };

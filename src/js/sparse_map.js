@@ -36,10 +36,12 @@ rl.SparseMap.prototype.add = function(x, y, obj) {
  * @param {number} y
  */
 rl.SparseMap.prototype.remove = function(x, y) {
-  if (Object.keys(this.map_[x]).length == 1 && this.map_[x][y]) {
-    delete this.map_[x];
-  } else if (Object.keys(this.map_[x]).length > 1 && this.map_[x][y]) {
-    delete this.map_[x][y];
+  if (this.map_[x]) {
+    if (Object.keys(this.map_[x]).length == 1 && this.map_[x][y]) {
+      delete this.map_[x];
+    } else if (Object.keys(this.map_[x]).length > 1 && this.map_[x][y]) {
+      delete this.map_[x][y];
+    }
   }
 };
 

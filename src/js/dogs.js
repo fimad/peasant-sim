@@ -80,12 +80,23 @@ rl.npc.dogs.Dog.prototype.update = function(game) {
     {x: pos.x, y: pos.y + 1}
   ];
 
+  // Chase the crumbs if there are any.
+  var targetX, targetY;
+  var crumbs = game.getCrumbs();
+  if (crumbs.length == 0) {
+    targetX = game.getX();
+    targetY = game.getY();
+  } else {
+    targetX = crumbs[0].x;
+    targetY = crumbs[0].y;
+  }
+
   goog.array.sort(moves, function(a, b) {
-    var aDist = Math.pow(game.getX() - a.x, 2)
-              + Math.pow(game.getY() - a.y, 2)
+    var aDist = Math.pow(targetX - a.x, 2)
+              + Math.pow(targetY - a.y, 2)
               + (rl.npc.dogs.JITTER * Math.random());
-    var bDist = Math.pow(game.getX() - b.x, 2)
-              + Math.pow(game.getY() - b.y, 2)
+    var bDist = Math.pow(targetX - b.x, 2)
+              + Math.pow(targetY - b.y, 2)
               + (rl.npc.dogs.JITTER * Math.random());
     return (aDist < bDist) ? -1 : (aDist == bDist) ? 0 : 1;
   });
@@ -93,9 +104,15 @@ rl.npc.dogs.Dog.prototype.update = function(game) {
   for (var i = 0; i < moves.length; i++) {
     var move = moves[i];
 
-    if (move.x == game.getX() && move.y == game.getY()) {
-      var spread = rl.npc.dogs.MAX_DAMAGE - rl.npc.dogs.MIN_DAMAGE;
-      game.doDamage(Math.floor(Math.random() * spread + rl.npc.dogs.MAX_DAMAGE));
+    // Handle either attacking the peasant or eating a crumb of bread.
+    if (move.x == targetX && move.y == targetY) {
+      if (crumbs.length > 0) {
+        game.eatCrumb(targetX, targetY);
+      } else {
+        var spread = rl.npc.dogs.MAX_DAMAGE - rl.npc.dogs.MIN_DAMAGE;
+        var amnt = Math.floor(Math.random() * spread + rl.npc.dogs.MAX_DAMAGE);
+        game.doDamage(amnt);
+      }
       break;
     }
 

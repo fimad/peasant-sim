@@ -27,6 +27,7 @@ rl.controls_[goog.events.KeyCodes.K] = rl.Game.Command.MOVE_UP;
 rl.controls_[goog.events.KeyCodes.L] = rl.Game.Command.MOVE_RIGHT;
 
 rl.controls_[goog.events.KeyCodes.SPACE] = rl.Game.Command.EAT;
+rl.controls_[goog.events.KeyCodes.D] = rl.Game.Command.DROP;
 rl.controls_[goog.events.KeyCodes.PERIOD] = rl.Game.Command.PAUSE;
 
 

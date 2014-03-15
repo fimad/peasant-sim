@@ -2,6 +2,16 @@ goog.provide('rl.map');
 
 goog.require('goog.array');
 
+
+/**
+ * @typedef {{
+ *  x: number,
+ *  y: number
+ * }}
+ */
+rl.map.Position;
+
+
 /**
  * @typedef {{
  *  text: string,

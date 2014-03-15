@@ -1,5 +1,6 @@
 goog.provide('rl.Game');
 goog.provide('rl.Manager');
+goog.require('rl.SparseMap');
 goog.require('rl.map');
 
 
@@ -83,6 +84,18 @@ rl.Game = function() {
   this.managers_ = [];
 
   /**
+   * @type {!Array.<!rl.Game.Crumb>}
+   * @private
+   */
+  this.crumbs_ = [];
+
+  /**
+   * @type {!rl.SparseMap.<!rl.Game.Crumb>}
+   * @private
+   */
+  this.crumbCache_ = new rl.SparseMap();
+
+  /**
    * @type {rl.map.WorldFunc}
    * @private
    */
@@ -95,6 +108,10 @@ rl.Game.MAX_HP = 13;
 
 
 /** @const {number} */
+rl.Game.REST_HP = 7;
+
+
+/** @const {number} */
 rl.Game.MAX_BREAD = 800;
 
 
@@ -104,6 +121,10 @@ rl.Game.BREAD_SLICE = rl.Game.MAX_BREAD / 5;
 
 /** @const {number} */
 rl.Game.BREAD_FILL_UP = 2;
+
+
+/** @const {number} */
+rl.Game.CRUMB_USES = 4;
 
 
 /** @const {number} */
@@ -127,11 +148,28 @@ rl.Game.SELF_CELL = {
 };
 
 
+/** @const {rl.map.Cell} */
+rl.Game.CRUMB_CELL = {
+  name: 'self',
+  text: 'c',
+  color: '#C7AD81',
+  walkable: true
+};
+
+
 /** @typedef {{
  *  name: string,
  *  color: string
  * }} */
 rl.Game.HungerState;
+
+
+/** @typedef {{
+ *  x: number,
+ *  y: number,
+ *  uses: number
+ * }} */
+rl.Game.Crumb;
 
 
 /** @type {Array.<rl.Game.HungerState>} */
@@ -154,7 +192,52 @@ rl.Game.Command = {
   MOVE_UP: 3,
   MOVE_RIGHT: 4,
   EAT: 5,
-  PAUSE: 6
+  DROP: 6,
+  PAUSE: 7
+}
+
+
+/**
+ * Drops a crumb on the cell that the peasant is currently occupying.
+ */
+rl.Game.prototype.dropCrumb = function() {
+  var x = this.x_, y = this.y_;
+  if (this.bread_ >= rl.Game.BREAD_SLICE && !this.crumbCache_.get(x, y)) {
+    var crumb = {x: x, y: y, uses: rl.Game.CRUMB_USES};
+    this.crumbs_.push(crumb);
+    this.crumbCache_.add(x, y, crumb);
+    this.bread_ -= rl.Game.BREAD_SLICE;
+  }
+};
+
+
+/**
+ * Eats a crumb at the given location.
+ * @param {number} x
+ * @param {number} y
+ */
+rl.Game.prototype.eatCrumb = function(x ,y) {
+  var crumb = this.crumbCache_.get(x, y);
+  crumb.uses -= 1;
+
+  if (crumb.uses <= 0) {
+    this.crumbCache_.remove(x, y);
+    for (var i = 0; i < this.crumbs_.length; i++) {
+      if (this.crumbs_[i].x == x && this.crumbs_[i].y == y) {
+        this.crumbs_.splice(i, 1);
+        break;
+      }
+    }
+  }
+}
+
+
+/**
+ * Returns a list of all the crumbs in the game.
+ * @return {!Array.<!rl.map.Position>}
+ */
+rl.Game.prototype.getCrumbs = function() {
+  return this.crumbs_;
 }
 
 
@@ -259,10 +342,12 @@ rl.Game.prototype.doDamage = function(amount) {
  * Resets the health, bread and hunger.
  */
 rl.Game.prototype.rest = function() {
-  this.hp_ = rl.Game.MAX_HP;
+  this.hp_ = Math.min(rl.Game.MAX_HP, this.hp_ + rl.Game.REST_HP);
   this.bread_ = rl.Game.MAX_BREAD;
   this.hungerState_ = 0;
   this.hungerSteps_ = 0;
+  this.crumbs_ = [];
+  this.crumbCache_.clear();
 };
 
 
@@ -283,6 +368,9 @@ rl.Game.prototype.update = function(command) {
       newY--; break;
     case rl.Game.Command.MOVE_RIGHT:
       newX++; break;
+    case rl.Game.Command.DROP:
+      this.dropCrumb();
+      break;
     case rl.Game.Command.EAT:
       if (this.bread_ > 0) {
         this.hungerState_ -= rl.Game.BREAD_FILL_UP;
@@ -331,6 +419,9 @@ rl.Game.prototype.update = function(command) {
  */
 rl.Game.prototype.overlay = function(x, y) {
   var cells = [];
+  if (this.crumbCache_.get(x, y)) {
+    cells.push(rl.Game.CRUMB_CELL);
+  }
   if (this.x_ == x && this.y_ == y) {
     cells.push(rl.Game.SELF_CELL);
   }
