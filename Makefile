@@ -21,6 +21,7 @@ EXTERN_DIR=externs/
 
 SRCS_JS=${JS_DIR}/*.js
 SRCS_CSS=${CSS_DIR}/*.less
+SRCS_HTML=${HTML_DIR}/*.html
 
 EXTERNS_FLAGS=`echo ${EXTERN_DIR}/*.js | sed -r 's/(^| )/\1--compiler_flags=--externs=/g'`
 
